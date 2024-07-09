@@ -1,0 +1,14 @@
+{
+  "name": "baba-is-you-video",
+  "version": "1.0.0",
+  "description": "baba is you kuriltschika",
+  "scripts": {
+    "dev": "npx parcel index.html"
+  },
+  "keywords": [],
+  "author": "lxchurbakov",
+  "license": "MIT",
+  "dependencies": {
+    "parcel": "^2.12.0"
+  }
+}
