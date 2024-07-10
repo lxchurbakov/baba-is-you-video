@@ -1,20 +1,14 @@
-import baba from '../assets/baba.png';
+const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y });
+const distance = (a, b, c = sub(a, b)) => Math.sqrt(c.x * c.x + c.y * c.y);
 
-const UP_KEY = 87;
-const DOWN_KEY = 83;
-const LEFT_KEY = 65;
-const RIGHT_KEY = 68;
+const mul = (a, b) => ({ x: a.x * b, y: a.y * b });
+const sum = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
 
-const GRID_SIZE = 60;
+const codeToColor = (code) => {
+    const letter = Math.floor(code + 4).toString(16);
 
-const loadImage = async (url) => new Promise((resolve, reject) => {
-    const img = new Image();
-
-    img.onload = () => resolve(img);
-    img.onerror = (e) => reject(e);
-
-    img.src = url;
-});
+    return '#' + [letter, letter, letter].join('');
+};
 
 export class Walk {
     constructor (canvas) {
@@ -31,46 +25,57 @@ export class Walk {
         this.position = { x: 0, y: 0 };
 
         this.setupRender(context, rect);
-        this.setupKeyEvents();
     }
 
-    setupKeyEvents = () => {
-        window.addEventListener('keydown', (e) => {
-            if (e.keyCode === UP_KEY) {
-                this.position.y -= 1;
-            }
-
-            if (e.keyCode === DOWN_KEY) {
-                this.position.y += 1;
-            }
-
-            if (e.keyCode === RIGHT_KEY) {
-                this.position.x += 1;
-            }
-
-            if (e.keyCode === LEFT_KEY) {
-                this.position.x -= 1;
-            }
-        });
-    };
-
     setupRender = (context, rect) => {
-        let img = null;
-
-        loadImage(baba).then((i) => {
-            img = i;
-        });
-        
-        context.imageSmoothingEnabled = false;
+        let dots = new Array(1000).fill(0).map(() => ({
+            x: Math.random() * rect.width * .8 + rect.width * .1,
+            y: Math.random() * rect.height * .8 + rect.height * .1,
+            angle: Math.random() * 2 * Math.PI,
+            code: Math.random() * 12,
+        }));
 
         const render = () => {
             context.clearRect(0, 0, rect.width, rect.height);
 
-            if (img) {
-                const size = { x: img.width * 9, y: img.height * 9 };
-                const position = { x: this.position.x * GRID_SIZE, y: this.position.y * GRID_SIZE };
+            for (let dot of dots) {
+                context.fillStyle = codeToColor(dot.code);
 
-                context.drawImage(img, position.x + GRID_SIZE / 2 - size.x / 2, position.y + GRID_SIZE - size.y, size.x, size.y);
+                context.beginPath()
+                context.arc(dot.x, dot.y, 5, 0, Math.PI * 2);
+                context.fill();
+            }
+
+            for (let dot of dots) {
+
+                for (let otherDot of dots) {
+                    if (dot === otherDot) {
+                        continue;
+                    }
+
+                    const d = distance(otherDot, dot);
+
+                    if (d < 100 && d > 0) {
+                        const offset = mul(sub(otherDot, dot), -(100 / (d * d)));
+
+                        dot.x += offset.x;
+                        dot.y += offset.y;
+                    }
+                }
+
+                for (let otherDot of dots) {
+                    if (dot === otherDot) {
+                        continue;
+                    }
+
+                    const similarity = Math.abs(dot.code - otherDot.code);
+                    const d = distance(otherDot, dot);
+
+                    const offset = mul(sub(otherDot, dot), (1 / (d * d)) * .5 * similarity);
+
+                    dot.x += offset.x;
+                    dot.y += offset.y;
+                }
             }
 
             requestAnimationFrame(render);
