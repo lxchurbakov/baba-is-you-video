@@ -54,25 +54,37 @@ export class Walk {
 
         context.scale(pixelRatio, pixelRatio);
 
-        this.position = { x: 0, y: 0 };
-        this.wall = { x: 5, y: 5 };
+        this.entities = [
+            { type: 'baba', position: { x: 0, y: 0 } },
+            { type: 'wall', position: { x: 5, y: 5 } },
+            { type: 'wall', position: { x: 6, y: 6 } },
+        ];
 
         this.setupRender(context, rect);
         this.setupKeyEvents();
     }
 
+    findByType = (type) => {
+        return this.entities.filter(($) => $.type === type);
+    };
+
+    findByPosition = (position) => {
+        return this.entities.filter(($) => same($.position, position));
+    };
+
     setupKeyEvents = () => {
         window.addEventListener('keydown', (e) => {
             const direction = getDirection(e.keyCode);
-            const newPosition = move(this.position, direction);
 
-            // Проверяем наличие стены и двигаем, если надо
+            for (let baba of this.findByType('baba')) {
+                const newPosition = move(baba.position, direction);
 
-            if (same(this.wall, newPosition)) {
-                this.wall = move(this.wall, direction);
+                for (let obstacle of this.findByPosition(newPosition)) {
+                    obstacle.position = move(obstacle.position, direction);
+                }
+
+                baba.position = newPosition
             }
-
-            this.position = newPosition;
         });
     };
 
@@ -90,20 +102,15 @@ export class Walk {
         const render = () => {
             context.clearRect(0, 0, rect.width, rect.height);
 
-            if (assets.has('baba')) {
-                const img = assets.get('baba');
+            for (let entity of this.entities) {
+                const img = assets.get(entity.type);
+
+                if (!img) {
+                    continue;
+                }
 
                 const size = { x: img.width * 9, y: img.height * 9 };
-                const position = { x: this.position.x * GRID_SIZE, y: this.position.y * GRID_SIZE };
-
-                context.drawImage(img, position.x + GRID_SIZE / 2 - size.x / 2, position.y + GRID_SIZE - size.y, size.x, size.y);
-            }
-
-            if (assets.has('wall')) {
-                const img = assets.get('wall');
-
-                const size = { x: img.width * 9, y: img.height * 9 };
-                const position = { x: this.wall.x * GRID_SIZE, y: this.wall.y * GRID_SIZE };
+                const position = { x: entity.position.x * GRID_SIZE, y: entity.position.y * GRID_SIZE };
 
                 context.drawImage(img, position.x + GRID_SIZE / 2 - size.x / 2, position.y + GRID_SIZE - size.y, size.x, size.y);
             }
