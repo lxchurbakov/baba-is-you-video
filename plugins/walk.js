@@ -1,4 +1,5 @@
 import baba from '../assets/baba.png';
+import wall from '../assets/wall.png';
 
 const UP_KEY = 87;
 const DOWN_KEY = 83;
@@ -55,20 +56,33 @@ export class Walk {
     };
 
     setupRender = (context, rect) => {
-        let img = null;
+        const assets = new Map();
 
-        loadImage(baba).then((i) => {
-            img = i;
+        Object.entries({ baba, wall }).map(([key, src]) => {
+            return loadImage(src).then((value) => {
+                assets.set(key, value);
+            });
         });
-        
+
         context.imageSmoothingEnabled = false;
 
         const render = () => {
             context.clearRect(0, 0, rect.width, rect.height);
 
-            if (img) {
+            if (assets.has('baba')) {
+                const img = assets.get('baba');
+
                 const size = { x: img.width * 9, y: img.height * 9 };
                 const position = { x: this.position.x * GRID_SIZE, y: this.position.y * GRID_SIZE };
+
+                context.drawImage(img, position.x + GRID_SIZE / 2 - size.x / 2, position.y + GRID_SIZE - size.y, size.x, size.y);
+            }
+
+            if (assets.has('wall')) {
+                const img = assets.get('wall');
+
+                const size = { x: img.width * 9, y: img.height * 9 };
+                const position = { x: 5 * GRID_SIZE, y: 5 * GRID_SIZE };
 
                 context.drawImage(img, position.x + GRID_SIZE / 2 - size.x / 2, position.y + GRID_SIZE - size.y, size.x, size.y);
             }
