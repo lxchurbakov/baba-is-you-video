@@ -17,6 +17,31 @@ const loadImage = async (url) => new Promise((resolve, reject) => {
     img.src = url;
 });
 
+// Определим несколько простых операций над типом точки
+
+const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
+const same = (a, b) => a.x === b.x && a.y === b.y;
+
+// Пара функций для перемещения
+
+const move = (p, dir) => {
+    return {
+        right: add(p, { x: 1, y: 0 }),
+        left: add(p, { x: -1, y: 0 }),
+        top: add(p, { x: 0, y: -1 }),
+        bottom: add(p, { x: 0, y: 1 }),
+    }[dir] || p;
+};
+
+const getDirection = (keyCode) => {
+    return {
+        [UP_KEY]: 'top',
+        [LEFT_KEY]: 'left',
+        [RIGHT_KEY]: 'right',
+        [DOWN_KEY]: 'bottom',
+    }[keyCode] || null;
+};
+
 export class Walk {
     constructor (canvas) {
         const rect = canvas.parentNode.getBoundingClientRect();
@@ -30,6 +55,7 @@ export class Walk {
         context.scale(pixelRatio, pixelRatio);
 
         this.position = { x: 0, y: 0 };
+        this.wall = { x: 5, y: 5 };
 
         this.setupRender(context, rect);
         this.setupKeyEvents();
@@ -37,21 +63,16 @@ export class Walk {
 
     setupKeyEvents = () => {
         window.addEventListener('keydown', (e) => {
-            if (e.keyCode === UP_KEY) {
-                this.position.y -= 1;
+            const direction = getDirection(e.keyCode);
+            const newPosition = move(this.position, direction);
+
+            // Проверяем наличие стены и двигаем, если надо
+
+            if (same(this.wall, newPosition)) {
+                this.wall = move(this.wall, direction);
             }
 
-            if (e.keyCode === DOWN_KEY) {
-                this.position.y += 1;
-            }
-
-            if (e.keyCode === RIGHT_KEY) {
-                this.position.x += 1;
-            }
-
-            if (e.keyCode === LEFT_KEY) {
-                this.position.x -= 1;
-            }
+            this.position = newPosition;
         });
     };
 
@@ -82,7 +103,7 @@ export class Walk {
                 const img = assets.get('wall');
 
                 const size = { x: img.width * 9, y: img.height * 9 };
-                const position = { x: 5 * GRID_SIZE, y: 5 * GRID_SIZE };
+                const position = { x: this.wall.x * GRID_SIZE, y: this.wall.y * GRID_SIZE };
 
                 context.drawImage(img, position.x + GRID_SIZE / 2 - size.x / 2, position.y + GRID_SIZE - size.y, size.x, size.y);
             }
