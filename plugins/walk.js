@@ -72,18 +72,22 @@ export class Walk {
         return this.entities.filter(($) => same($.position, position));
     };
 
+    move = (entity, direction) => {
+        const newPosition = move(entity.position, direction);
+
+        for (let obstacle of this.findByPosition(newPosition)) {
+            this.move(obstacle, direction);
+        }
+
+        entity.position = newPosition;
+    };
+
     setupKeyEvents = () => {
         window.addEventListener('keydown', (e) => {
             const direction = getDirection(e.keyCode);
 
             for (let baba of this.findByType('baba')) {
-                const newPosition = move(baba.position, direction);
-
-                for (let obstacle of this.findByPosition(newPosition)) {
-                    obstacle.position = move(obstacle.position, direction);
-                }
-
-                baba.position = newPosition
+                this.move(baba, direction);
             }
         });
     };
