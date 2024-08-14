@@ -59,8 +59,6 @@ export class Walk {
 
         this.setupRender(context, rect);
         this.setupKeyEvents();
-
-        this.world.onUpdate.on(() => console.log('something in the world updated'));
     }
 
     move = (entityId, direction, depth = 0) => {
