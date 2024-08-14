@@ -1,13 +1,7 @@
 import baba from '../assets/baba.png';
 import wall from '../assets/wall.png';
 
-const UP_KEY = 87;
-const DOWN_KEY = 83;
-const LEFT_KEY = 65;
-const RIGHT_KEY = 68;
-
 const GRID_SIZE = 60;
-const MAX_DEPTH = 3;
 
 const loadImage = async (url) => new Promise((resolve, reject) => {
     const img = new Image();
@@ -18,32 +12,7 @@ const loadImage = async (url) => new Promise((resolve, reject) => {
     img.src = url;
 });
 
-// Определим несколько простых операций над типом точки
-
-const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
-const same = (a, b) => a.x === b.x && a.y === b.y;
-
-// Пара функций для перемещения
-
-const move = (p, dir) => {
-    return {
-        right: add(p, { x: 1, y: 0 }),
-        left: add(p, { x: -1, y: 0 }),
-        top: add(p, { x: 0, y: -1 }),
-        bottom: add(p, { x: 0, y: 1 }),
-    }[dir] || p;
-};
-
-const getDirection = (keyCode) => {
-    return {
-        [UP_KEY]: 'top',
-        [LEFT_KEY]: 'left',
-        [RIGHT_KEY]: 'right',
-        [DOWN_KEY]: 'bottom',
-    }[keyCode] || null;
-};
-
-export class Walk {
+export class Render {
     constructor (canvas, world, rules) {
         this.world = world;
         this.rules = rules;
@@ -59,38 +28,8 @@ export class Walk {
         context.scale(pixelRatio, pixelRatio);
 
         this.setupRender(context, rect);
-        this.setupKeyEvents();
     }
-
-    move = (entityId, direction, depth = 0) => {
-        if (depth > MAX_DEPTH) {
-            return false;
-        }
-
-        const entity = this.world.get(entityId);
-        const position = move(entity.position, direction);
-
-        for (let obstacleId of this.world.findByPosition(position)) {
-            if (!this.move(obstacleId, direction, depth + 1)) {
-                return false;
-            }
-        }
-
-        this.world.set(entityId, { ...entity, position })
-
-        return true;
-    };
-
-    setupKeyEvents = () => {
-        window.addEventListener('keydown', (e) => {
-            const direction = getDirection(e.keyCode);
-
-            for (let babaId of this.world.findByType('baba')) {
-                this.move(babaId, direction);
-            }
-        });
-    };
-
+    
     setupRender = (context, rect) => {
         const assets = new Map();
 

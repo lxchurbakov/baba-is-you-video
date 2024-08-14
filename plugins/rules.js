@@ -1,5 +1,4 @@
-const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
-const same = (a, b) => a.x === b.x && a.y === b.y;
+import { add } from '../lib/point';
 
 const ZERO_POINT = { x: 0, y: 0 }
 
