@@ -7,6 +7,7 @@ const LEFT_KEY = 65;
 const RIGHT_KEY = 68;
 
 const GRID_SIZE = 60;
+const MAX_DEPTH = 2;
 
 const loadImage = async (url) => new Promise((resolve, reject) => {
     const img = new Image();
@@ -58,6 +59,7 @@ export class Walk {
             { type: 'baba', position: { x: 0, y: 0 } },
             { type: 'wall', position: { x: 5, y: 5 } },
             { type: 'wall', position: { x: 6, y: 6 } },
+            { type: 'wall', position: { x: 7, y: 6 } },
         ];
 
         this.setupRender(context, rect);
@@ -72,14 +74,22 @@ export class Walk {
         return this.entities.filter(($) => same($.position, position));
     };
 
-    move = (entity, direction) => {
+    move = (entity, direction, depth = 0) => {
+        if (depth > MAX_DEPTH) {
+            return false;
+        }
+
         const newPosition = move(entity.position, direction);
 
         for (let obstacle of this.findByPosition(newPosition)) {
-            this.move(obstacle, direction);
+            if (!this.move(obstacle, direction, depth + 1)) {
+                return false;
+            }
         }
 
         entity.position = newPosition;
+
+        return true;
     };
 
     setupKeyEvents = () => {
