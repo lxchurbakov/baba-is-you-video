@@ -8,6 +8,7 @@ export class Rules {
         this.world = world;
 
         this.world.onUpdate.on(this.combineRules);
+        this.combineRules();
     }
 
     extractRule = (position, change) => {
@@ -24,7 +25,7 @@ export class Rules {
     };
 
     combineRules = () => {
-        let rules = [];
+        this.rules = [];
 
         for (let wordId of this.world.findByType('word')) {
             const { position } = this.world.get(wordId);
@@ -33,14 +34,16 @@ export class Rules {
             const verticalRule = this.extractRule(position, 'y');
 
             if (horizontalRule.length === 3) {
-                rules.push(horizontalRule);
+                this.rules.push(horizontalRule);
             }
 
             if (verticalRule.length === 3) {
-                rules.push(verticalRule);
+                this.rules.push(verticalRule);
             }
         }
+    };
 
-        // console.log(rules);
+    all = () => {
+        return this.rules;
     };
 }

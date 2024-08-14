@@ -10,4 +10,4 @@ if (!canvas) {
 
 const world = new World();
 const rules = new Rules(world);
-const walk = new Walk(canvas, world);
+const walk = new Walk(canvas, world, rules);

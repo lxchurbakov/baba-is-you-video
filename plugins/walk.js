@@ -44,8 +44,9 @@ const getDirection = (keyCode) => {
 };
 
 export class Walk {
-    constructor (canvas, world) {
+    constructor (canvas, world, rules) {
         this.world = world;
+        this.rules = rules;
 
         const rect = canvas.parentNode.getBoundingClientRect();
         const pixelRatio = window.devicePixelRatio || 1;
@@ -103,6 +104,16 @@ export class Walk {
 
         const render = () => {
             context.clearRect(0, 0, rect.width, rect.height);
+
+            const rules = this.rules.all();
+
+            for (let i = 0; i < rules.length; ++i) {
+                context.beginPath();
+                context.fillStyle = '#ffffff';
+                context.textAlign = 'left';
+                context.font = '18px monospace'
+                context.fillText(rules[i].join(' '), 10, (i + 1) * 22);
+            }
 
             for (let entity of this.world.all()) {
                 if (entity.type === 'word') {
