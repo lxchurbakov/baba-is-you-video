@@ -9,6 +9,7 @@
   "author": "lxchurbakov",
   "license": "MIT",
   "dependencies": {
+    "lodash": "^4.17.21",
     "parcel": "^2.12.0"
   }
 }

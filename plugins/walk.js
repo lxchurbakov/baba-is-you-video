@@ -7,7 +7,7 @@ const LEFT_KEY = 65;
 const RIGHT_KEY = 68;
 
 const GRID_SIZE = 60;
-const MAX_DEPTH = 2;
+const MAX_DEPTH = 3;
 
 const loadImage = async (url) => new Promise((resolve, reject) => {
     const img = new Image();
@@ -44,7 +44,9 @@ const getDirection = (keyCode) => {
 };
 
 export class Walk {
-    constructor (canvas) {
+    constructor (canvas, world) {
+        this.world = world;
+
         const rect = canvas.parentNode.getBoundingClientRect();
         const pixelRatio = window.devicePixelRatio || 1;
 
@@ -55,39 +57,27 @@ export class Walk {
 
         context.scale(pixelRatio, pixelRatio);
 
-        this.entities = [
-            { type: 'baba', position: { x: 0, y: 0 } },
-            { type: 'wall', position: { x: 5, y: 5 } },
-            { type: 'wall', position: { x: 6, y: 6 } },
-            { type: 'wall', position: { x: 7, y: 6 } },
-        ];
-
         this.setupRender(context, rect);
         this.setupKeyEvents();
+
+        this.world.onUpdate.on(() => console.log('something in the world updated'));
     }
 
-    findByType = (type) => {
-        return this.entities.filter(($) => $.type === type);
-    };
-
-    findByPosition = (position) => {
-        return this.entities.filter(($) => same($.position, position));
-    };
-
-    move = (entity, direction, depth = 0) => {
+    move = (entityId, direction, depth = 0) => {
         if (depth > MAX_DEPTH) {
             return false;
         }
 
-        const newPosition = move(entity.position, direction);
+        const entity = this.world.get(entityId);
+        const position = move(entity.position, direction);
 
-        for (let obstacle of this.findByPosition(newPosition)) {
-            if (!this.move(obstacle, direction, depth + 1)) {
+        for (let obstacleId of this.world.findByPosition(position)) {
+            if (!this.move(obstacleId, direction, depth + 1)) {
                 return false;
             }
         }
 
-        entity.position = newPosition;
+        this.world.set(entityId, { ...entity, position })
 
         return true;
     };
@@ -96,8 +86,8 @@ export class Walk {
         window.addEventListener('keydown', (e) => {
             const direction = getDirection(e.keyCode);
 
-            for (let baba of this.findByType('baba')) {
-                this.move(baba, direction);
+            for (let babaId of this.world.findByType('baba')) {
+                this.move(babaId, direction);
             }
         });
     };
@@ -116,7 +106,19 @@ export class Walk {
         const render = () => {
             context.clearRect(0, 0, rect.width, rect.height);
 
-            for (let entity of this.entities) {
+            for (let entity of this.world.all()) {
+                if (entity.type === 'word') {
+                    const position = { x: entity.position.x * GRID_SIZE, y: entity.position.y * GRID_SIZE };
+                    
+                    context.beginPath();
+                    context.fillStyle = '#ffffff';
+                    context.textAlign = 'center';
+                    context.font = '18px monospace'
+                    context.fillText(entity.word, position.x + GRID_SIZE / 2, position.y + GRID_SIZE / 2);
+
+                    continue;
+                }
+
                 const img = assets.get(entity.type);
 
                 if (!img) {
