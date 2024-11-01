@@ -56,7 +56,8 @@ export class IsYou {
         window.addEventListener('keydown', (e) => {
             const direction = getDirection(e.keyCode);
 
-            const types = this.rules.all().filter(($) => $.join(' ').endsWith('is you')).map(($) => $[0]);
+            // const types = this.rules.all().filter(($) => $.join(' ').endsWith('is you')).map(($) => $[0]);
+            const types = this.rules.getTypes('you');
 
             for (let type of types) {
                 for (let babaId of this.world.findByType(type)) {

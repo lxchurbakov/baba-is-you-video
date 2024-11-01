@@ -45,4 +45,27 @@ export class Rules {
     all = () => {
         return this.rules;
     };
+
+     // Проверим, применяется ли правило к определенному типу
+     is = (type, rule) => {
+        return this.rules.some(($) => {
+            return ($[0] === type && $[2] === rule)
+                || ($[2] === type && $[0] === rule);
+        });
+    };
+
+    // Вернем все типы, к которым применяется правило
+    getTypes = (rule) => {
+        return this.rules.map(($) => {
+            if ($[0] === rule) {
+                return $[2];
+            }
+
+            if ($[2] === rule) {
+                return $[0];
+            }
+
+            return null;
+        }).filter(Boolean);
+    };
 }
