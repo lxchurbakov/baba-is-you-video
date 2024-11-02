@@ -16,7 +16,7 @@ export class Rules {
             position,
             add(position, { ...ZERO_POINT, ...{ [change]: 1 } })
         ].map((p) => {
-            const [id] = this.world.findByPosition(p);
+            const [id] = this.world.findByPosition(p).filter(($) => this.world.get($).type === 'word');
             const word = this.world.get(id)?.word ?? null;
 
             return word;
